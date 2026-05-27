@@ -1,0 +1,14 @@
+# Ignora archivos objeto generados durante la compilación
+*.o
+
+# Ignora archivos ejecutables comunes en C++ 
+*.out
+*.exe
+bomberman
+
+*:Zone.Identifier
+
+.vscode/
+
+*.log
+core
