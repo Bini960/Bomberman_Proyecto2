@@ -3,27 +3,35 @@
 
 #include "Mapa.h" // Incluye la clase encargada del tablero.
 #include <pthread.h> 
+#include <vector> // Incluye la estructura de datos estándar.
 
-class MotorJuego { // Define la clase que controla el flujo principal de la simulación.
-private: // Atributos privados de la clase.
-    Mapa mapa; // Instancia compartida del mapa del juego.
-    bool juegoActivo; // Bandera para determinar si la partida sigue en ejecución.
-    bool pausado; // Bandera para controlar el estado de pausa del juego.
-    pthread_mutex_t mutexEstado; // Mutex para proteger las banderas de estado global.
-    pthread_cond_t condPausa; // Variable de condición para suspender los hilos durante la pausa.
+class Jugador; 
+class Enemigo; 
+class ManejadorEntrada; 
 
-public: // Métodos públicos de la clase.
-    MotorJuego(); // Constructor de la clase.
-    ~MotorJuego(); // Destructor de la clase.
-    void inicializar(); // Configura los elementos iniciales antes de arrancar.
-    void ejecutar(); // Contiene el ciclo principal de actualización del juego.
-    void alternarPausa(); // Cambia de forma segura el estado de pausa.
-    bool estaActivo(); // Retorna si la partida sigue activa.
-    bool estaPausado(); // Retorna si la simulación está en pausa.
-    void detener(); // Finaliza el ciclo de juego de manera ordenada.
-    Mapa* obtenerMapa(); // Devuelve un puntero al mapa para el acceso de otras clases.
-    pthread_mutex_t* obtenerMutexEstado(); // Devuelve un puntero al mutex de estado.
-    pthread_cond_t* obtenerCondPausa(); // Devuelve un puntero a la variable de condición.
+class MotorJuego { // Clase administradora 
+private: 
+    Mapa mapa; // Instancia el entorno visual de la consola.
+    bool juegoActivo; // Bandera atómica simulada para el ciclo de vida.
+    bool pausado; // Bandera para controlar la suspensión temporal.
+    pthread_mutex_t mutexEstado; // Candado para proteger las banderas globales.
+    pthread_cond_t condPausa; // Señal de condición para pausar hilos pasivamente.
+    std::vector<Jugador*> jugadores; // Contenedor dinámico de punteros a personajes.
+    std::vector<Enemigo*> enemigos; // Contenedor dinámico de punteros a adversarios.
+    ManejadorEntrada* manejador; // Puntero hacia el hilo de lectura de consola.
+
+public: 
+    MotorJuego(); // Constructor que inicializa las variables de estado.
+    ~MotorJuego(); // Destructor que libera la memoria dinámica asignada.
+    void inicializar(); // Instancia las entidades y lanza sus hilos.
+    void ejecutar(); // Gestiona el bucle de actualización de fotogramas.
+    void alternarPausa(); // Invierte de forma segura el estado de suspensión.
+    bool estaActivo(); // Extrae de forma segura el estado de ejecución.
+    bool estaPausado(); // Extrae de forma segura el estado de pausa.
+    void detener(); // Rompe el ciclo principal y solicita el cierre.
+    Mapa* obtenerMapa(); // Retorna la dirección en memoria de la matriz.
+    pthread_mutex_t* obtenerMutexEstado(); // Retorna el candado de control global.
+    pthread_cond_t* obtenerCondPausa(); // Retorna la señal de suspensión.
 };
 
-#endif // Fin de la condición de inclusión del archivo.
+#endif // Cierra la directiva de compilación condicional.
