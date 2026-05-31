@@ -1,5 +1,5 @@
-#include "Enemigo.cpp" // Enlace al oponente.
 #include "Enemigo.h" // Incluye el header correspondiente.
+#include "MotorJuego.h" // Incluye la definición del motor para acceder a las variables globales.
 #include <unistd.h>
 
 Enemigo::Enemigo(int x, int y, int tipo, MotorJuego* m) { // Constructor base.
