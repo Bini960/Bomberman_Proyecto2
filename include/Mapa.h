@@ -1,23 +1,25 @@
-#ifndef MAPA_H // Evita la inclusión múltiple del archivo
-#define MAPA_H // Define el símbolo del archivo
+#ifndef MAPA_H // Evita problemas de redefinición en cascada.
+#define MAPA_H // Declara la cabecera oficial del renderizador gráfico.
 
-#include <pthread.h> // Proporciona las funciones para hilos POSIX
+#include <pthread.h> // Incluye la librería POSIX para utilizar sincronización espacial.
+#include <string> // Incluye librerías de cadenas para el texto informativo.
 
-class Mapa { // Define la clase encargada de la interfaz gráfica y el tablero.
+class Mapa { // Administra la matriz bidimensional y la interacción visual por consola.
 private: 
-    char matriz[13][15]; // Matriz bidimensional para el laberinto (13 filas por 15 columnas)
-    pthread_mutex_t mutexMapa; // Mutex para proteger el acceso concurrente a la matriz
+    char matriz[13][15]; // Reserva un bloque estático de memoria para el laberinto.
+    pthread_mutex_t mutexMapa; // Declara el candado exclusivo para prevenir desajustes gráficos al dibujar simultáneamente.
 
 public: 
-    Mapa(); // Constructor de la clase
-    ~Mapa(); // Destructor de la clase
-    void inicializarMapa(); // Llena la matriz con los muros y espacios vacíos iniciales
-    void dibujar(); // Renderiza el mapa y las estadísticas en la consola
-    void mostrarMenu(); // Muestra el menú principal interactivo
-    void mostrarInstrucciones(); // Muestra la pantalla con las reglas y controles
-    void mostrarPuntajes(); // Muestra la tabla de mejores puntuaciones
-    void actualizarCelda(int x, int y, char caracter); // Modifica de forma segura una posición del mapa
-    char obtenerCelda(int x, int y); // Lee de forma segura el contenido de una posición
+    Mapa(); // Constructor encargado de preparar el candado de la matriz.
+    ~Mapa(); // Destructor para recolección de variables POSIX.
+    void inicializarMapa(); // Ejecuta la construcción espacial de bloques y pasillos.
+    void dibujar(int vidas1, int vidas2, int puntos, int nivel, int modo, std::string mensaje); // Proyecta el modelo de memoria en la terminal de usuario usando caracteres ANSI.
+    int mostrarMenu(); // Administra las pantallas de inicio solicitando comandos de navegación.
+    void mostrarInstrucciones(); // Despliega la documentación estática de los controles.
+    void mostrarPuntajes(); // Lee registros físicos de disco para exponer el historial.
+    void guardarPuntaje(int puntos); // Graba en un archivo plano un nuevo récord obtenido.
+    void actualizarCelda(int x, int y, char caracter); // Sobrescribe de forma atómica una coordenada espacial.
+    char obtenerCelda(int x, int y); // Lee y extrae con exclusión mutua el valor de una casilla.
 };
 
-#endif // Fin de la condición 
+#endif 
