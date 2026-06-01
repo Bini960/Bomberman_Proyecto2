@@ -1,15 +1,19 @@
-#include "Poder.h" // Enlaza el header correspondiente de ventajas.
+#include "Poder.h" // Invocación de las firmas prototipo establecidas para el polimorfismo del juego.
 
-Poder::Poder(int x, int y, int tipo) { // Constructor de asignación.
-    posX = x; // Fija la coordenada de la fila del beneficio.
-    posY = y; // Fija la coordenada de la columna del beneficio.
-    tipoPoder = tipo; // Define el tipo de beneficio específico.
+Poder::Poder(int x, int y) { // Inicializa variables posicionales básicas desde las raíces abstractas de la definición.
+    posX = x; // Establece ubicación inicial horizontal del bono flotante.
+    posY = y; // Establece ubicación vertical espacial temporal.
 }
 
-void Poder::aplicarEfecto() { // Modifica atributos lógicos de las entidades de forma secuencial.
-    if (tipoPoder == 1) { // Valida si el tipo representa un aumento de velocidad.
-        // Espacio para incrementar la velocidad modificando el retardo del hilo del jugador.
-    } else if (tipoPoder == 2) { // Valida si representa un aumento del rango explosivo.
-        // Espacio para ampliar el radio en las propiedades del objeto bomba del jugador.
-    }
+PoderVelocidad::PoderVelocidad(int x, int y) : Poder(x, y) {} // Utiliza la delegación paramétrica llamando al molde del objeto primigenio.
+
+void PoderVelocidad::aplicarEfecto() { // Declaración de método virtual preparatorio.
+    // Estructura modular polimórfica preestablecida.
+    // Actualmente las mejoras numéricas actúan directamente sobre el hilo de la clase Jugador para maximizar eficiencia de memoria de acceso local.
+}
+
+PoderRadio::PoderRadio(int x, int y) : Poder(x, y) {} // Herencia constructora simple sin parámetros de atributos dinámicos propios por el momento.
+
+void PoderRadio::aplicarEfecto() { // Declaración polimórfica escalable obligatoria.
+    // Permite delegar responsabilidades sin causar colisiones en la refactorización arquitectónica de clases en posteriores actualizaciones modulares de software.
 }
