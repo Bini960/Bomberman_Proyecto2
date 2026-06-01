@@ -1,27 +1,27 @@
-#ifndef PODER_H // Protege contra redefiniciones del archivo.
-#define PODER_H // Declara la cabecera del módulo.
+#ifndef PODER_H // Protege contra redefiniciones del archivo durante fase de enlazado.
+#define PODER_H // Declara la cabecera del módulo abstracto.
 
-class Poder { // Define la clase base abstracta para los beneficios.
-protected: // Permite el acceso a clases derivadas.
-    int posX; // Coordenada X en la matriz.
-    int posY; // Coordenada Y en la matriz.
+class Poder { // Define la clase base abstracta preparativa para un sistema de beneficios polimórficos estructurados.
+protected: // Permite el acceso exclusivo interno a clases de herencia directa.
+    int posX; // Coordenada resguardada X en la matriz para mapear colisiones.
+    int posY; // Coordenada resguardada Y en la matriz para mapeo virtual.
 
-public: // Métodos de acceso general.
-    Poder(int x, int y); // Constructor base de inicialización.
-    virtual ~Poder() = default; // Destructor virtual para asegurar limpieza polimórfica segura.
-    virtual void aplicarEfecto() = 0; // Método virtual puro, obliga a las clases hijas a implementarlo.
+public: // Establece los métodos de interfaz expuesta al entorno.
+    Poder(int x, int y); // Constructor base para fijar dimensiones desde su origen.
+    virtual ~Poder() = default; // Destructor virtual imperativo para asegurar la correcta destrucción progresiva de memoria en derivaciones lógicas.
+    virtual void aplicarEfecto() = 0; // Fuerza estrictamente un diseño puro abstrayendo la implementación obligatoria de rutinas hacia los subtipos específicos.
 };
 
-class PoderVelocidad : public Poder { // Hereda de la clase base para crear un objeto específico.
-public: // Métodos del beneficio de velocidad.
-    PoderVelocidad(int x, int y); // Constructor especializado.
-    void aplicarEfecto() override; // Sobrescribe el método para aplicar su lógica única.
+class PoderVelocidad : public Poder { // Subclase que hereda los atributos y extiende la interfaz base emulando un concepto concreto.
+public: // Expone comportamiento derivado.
+    PoderVelocidad(int x, int y); // Constructor derivativo que se ensambla a la llamada padre.
+    void aplicarEfecto() override; // Exige implementar su firma única.
 };
 
-class PoderRadio : public Poder { // Hereda de la clase base para crear la mejora explosiva.
-public: // Métodos del beneficio de explosión.
+class PoderRadio : public Poder { // Subclase designada para contener una expansión ofensiva.
+public: // Exposición de datos de clase.
     PoderRadio(int x, int y); // Constructor especializado.
-    void aplicarEfecto() override; // Sobrescribe el método con su comportamiento único.
+    void aplicarEfecto() override; // Integra la variante operativa que muta el atributo ofensivo.
 };
 
-#endif // Fin de la declaración de clases.
+#endif // Fin de la declaración de bloque lógico estructural.
