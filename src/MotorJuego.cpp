@@ -1,11 +1,11 @@
-#include "MotorJuego.h" // Enlaza el archivo de definiciones del archivo principal
+#include "MotorJuego.h" // Enlaza el archivo de definiciones.
 #include "Jugador.h" // Permite instanciar objetos del tipo personaje en memoria.
 #include "Enemigo.h" // Permite instanciar objetos del tipo adversario.
 #include "ManejadorEntrada.h" // Permite instanciar el hilo lector del hardware de teclado.
-#include <unistd.h> 
-#include <iostream>
+#include <unistd.h>
+#include <iostream> 
 
-MotorJuego::MotorJuego() { // Constructor
+MotorJuego::MotorJuego() { // Constructor que prepara las variables iniciales.
     juegoActivo = false; // El programa arranca sin una partida activa por defecto.
     pausado = false; // La pausa se encuentra desactivada inicialmente.
     puntos = 0; // El puntaje inicia sin valores acumulados.
@@ -13,7 +13,7 @@ MotorJuego::MotorJuego() { // Constructor
     bombasActivas = 0; // El conteo de artefactos inicia vacío.
     maxBombas = 3; // Límite de artefactos simultáneos predeterminado para control de memoria.
     modoJuego = 1; // Configura el formato contra la inteligencia artificial por defecto.
-    mensajeGlobal = "¡Buena suerte!";
+    mensajeGlobal = "¡Buena suerte!"; // Texto de bienvenida predeterminado para el panel visual.
 
     pthread_mutexattr_t attr; // Crea los atributos para el candado de sincronización POSIX.
     pthread_mutexattr_init(&attr); // Inicia los atributos del candado en memoria.
@@ -24,14 +24,14 @@ MotorJuego::MotorJuego() { // Constructor
     manejador = nullptr; // Asegura que el lector de teclado no contenga direcciones de memoria residuales.
 }
 
-MotorJuego::~MotorJuego() { // Destructor 
+MotorJuego::~MotorJuego() { // Destructor llamado al finalizar el programa.
     detener(); // Envía la señal de apagado a todos los subprocesos en ejecución.
     limpiarNivel(); // Se asegura de recolectar todos los recursos dinámicos.
     pthread_mutex_destroy(&mutexEstado); // Devuelve los recursos del candado al sistema operativo.
     pthread_cond_destroy(&condPausa); // Devuelve los recursos de la variable de condición.
 }
 
-void MotorJuego::iniciarMenu() { 
+void MotorJuego::iniciarMenu() { // Mantiene el bucle de interacción de la interfaz.
     bool enMenu = true; // Establece la condición de permanencia en el programa.
     while (enMenu) { // Ejecuta el ciclo mientras no se elija salir.
         limpiarNivel(); // Se asegura de que la terminal esté restaurada y limpia antes de pedir datos.
@@ -91,7 +91,7 @@ void MotorJuego::inicializarNivel() { // Reconstruye el entorno para jugar.
     }
 }
 
-void MotorJuego::ejecutar() { 
+void MotorJuego::ejecutar() { // Administra los fotogramas de renderizado.
     while (estaActivo()) { // Mantiene vivo el renderizado mientras la bandera global persista.
         pthread_mutex_lock(&mutexEstado); // Solicita exclusión mutua para consultar variables de control.
         while (pausado && juegoActivo) { // Evalúa si existe una solicitud de interrupción activa.
@@ -108,7 +108,7 @@ void MotorJuego::ejecutar() {
     }
 }
 
-void MotorJuego::verificarEstadoNivel() {
+void MotorJuego::verificarEstadoNivel() { // Evalúa la progresión del modo campaña.
     pthread_mutex_lock(&mutexEstado); // Bloquea la memoria para evitar lecturas de hilos incompletos.
     bool enemigosVivos = false; // Supone que el tablero fue despejado de amenazas.
     for (Enemigo* e : enemigos) { // Itera la lista completa de inteligencias artificiales.
@@ -176,13 +176,13 @@ void MotorJuego::establecerMensaje(std::string mensaje) { // Sobrescribe el text
 
 std::string MotorJuego::obtenerMensaje() { // Consulta el texto para imprimirlo en pantalla.
     pthread_mutex_lock(&mutexEstado); // Bloquea la variable para prevenir lecturas corruptas.
-    std::string m = mensajeGlobal;
+    std::string m = mensajeGlobal; // Realiza una copia local del texto.
     pthread_mutex_unlock(&mutexEstado); // Devuelve el acceso a la memoria.
     return m; // Entrega el texto consultado.
 }
 
-Mapa* MotorJuego::obtenerMapa() { return &mapa; } /
-pthread_mutex_t* MotorJuego::obtenerMutexEstado() { return &mutexEstado; } /
-pthread_cond_t* MotorJuego::obtenerCondPausa() { return &condPausa; } 
+Mapa* MotorJuego::obtenerMapa() { return &mapa; } // Retorna el alias del entorno gráfico.
+pthread_mutex_t* MotorJuego::obtenerMutexEstado() { return &mutexEstado; } // Entrega referencia de candado al subsistema.
+pthread_cond_t* MotorJuego::obtenerCondPausa() { return &condPausa; } // Entrega referencia de señal condicional.
 int MotorJuego::obtenerModo() { return modoJuego; } // Informa bajo qué reglas de modalidad opera.
-int MotorJuego::obtenerMaxBombas() { return maxBombas; } // máximo de bombas.
+int MotorJuego::obtenerMaxBombas() { return maxBombas; } // Proyecta el tope máximo de artillería.
