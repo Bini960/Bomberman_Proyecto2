@@ -1,22 +1,113 @@
-#ifndef ENEMIGO_H 
-#define ENEMIGO_H // Define el header de enemigos.
+/*
+ * Autor: Franco Paiz
+ * Definición de la clase Enemigo.
+ * Esta clase representa a los enemigos del juego y administra
+ * su comportamiento, movimiento y estado dentro de la partida.
+ */
 
-#include "MotorJuego.h" // Conecta con el motor de juego para consultar la pausa.
-#include <pthread.h> // Necesario para instanciar el hilo individual de ejecución.
+#ifndef ENEMIGO_H
+#define ENEMIGO_H
 
-class Enemigo { // Modela a los oponentes automatizados de la simulación.
-private: 
-    pthread_t hiloEnemigo; // Identificador del hilo POSIX asignado al enemigo.
-    MotorJuego* motor; // Puntero al motor general de control.
-    int posX; // Fila del oponente en la cuadrícula del laberinto.
-    int posY; // Columna del oponente en la cuadrícula del laberinto.
-    int tipoMovimiento; // Variable para implementar diferentes patrones de movimiento (Puntos extra).
-    static void* rutinaEnemigo(void* arg); // Función de ejecución independiente de la entidad.
+#include "MotorJuego.h"
+#include <pthread.h>
 
-public: 
-    Enemigo(int x, int y, int tipo, MotorJuego* m); // Constructor con asignación de patrón de inteligencia.
-    ~Enemigo(); // Destructor para control de hilos.
-    void iniciar(); // Lanza la ejecución en paralelo del enemigo.
+/*
+ * Clase encargada de representar un enemigo en el mapa.
+ * Cada enemigo se ejecuta mediante un hilo independiente
+ * que controla sus movimientos y acciones.
+ */
+class Enemigo {
+private:
+    // Hilo asociado a la lógica del enemigo.
+    pthread_t hiloEnemigo;
+
+    // Referencia al motor principal del juego.
+    MotorJuego* motor;
+
+    // Posición actual del enemigo en el mapa.
+    int posX;
+    int posY;
+
+    // Tipo de movimiento que utilizará el enemigo.
+    int tipoMovimiento;
+
+    // Indica si el enemigo sigue activo.
+    bool vivo;
+
+    // Función ejecutada por el hilo del enemigo.
+    static void* rutinaEnemigo(void* arg);
+
+public:
+    /*
+     * Constructor del enemigo.
+     * Recibe la posición inicial, el tipo de movimiento y el motor del juego.
+     */
+    Enemigo(int x, int y, int tipo, MotorJuego* m);
+
+    // Destructor de la clase.
+    ~Enemigo();
+
+    // Inicia el hilo encargado de controlar al enemigo.
+    void iniciar();
+
+    // Devuelve el estado actual del enemigo.
+    bool estaVivo();
 };
 
-#endif 
+#endif/*
+ * Autor: Franco Paiz
+ * Definición de la clase Enemigo.
+ * Esta clase representa a los enemigos del juego y administra
+ * su comportamiento, movimiento y estado dentro de la partida.
+ */
+
+#ifndef ENEMIGO_H
+#define ENEMIGO_H
+
+#include "MotorJuego.h"
+#include <pthread.h>
+
+/*
+ * Clase encargada de representar un enemigo en el mapa.
+ * Cada enemigo se ejecuta mediante un hilo independiente
+ * que controla sus movimientos y acciones.
+ */
+class Enemigo {
+private:
+    // Hilo asociado a la lógica del enemigo.
+    pthread_t hiloEnemigo;
+
+    // Referencia al motor principal del juego.
+    MotorJuego* motor;
+
+    // Posición actual del enemigo en el mapa.
+    int posX;
+    int posY;
+
+    // Tipo de movimiento que utilizará el enemigo.
+    int tipoMovimiento;
+
+    // Indica si el enemigo sigue activo.
+    bool vivo;
+
+    // Función ejecutada por el hilo del enemigo.
+    static void* rutinaEnemigo(void* arg);
+
+public:
+    /*
+     * Constructor del enemigo.
+     * Recibe la posición inicial, el tipo de movimiento y el motor del juego.
+     */
+    Enemigo(int x, int y, int tipo, MotorJuego* m);
+
+    // Destructor de la clase.
+    ~Enemigo();
+
+    // Inicia el hilo encargado de controlar al enemigo.
+    void iniciar();
+
+    // Devuelve el estado actual del enemigo.
+    bool estaVivo();
+};
+
+#endif

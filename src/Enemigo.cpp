@@ -1,35 +1,138 @@
-#include "Enemigo.h" // Incluye el header correspondiente.
-#include "MotorJuego.h" // Incluye la definición del motor para acceder a las variables globales.
+/*
+ * Autor: Franco Paiz
+ * Implementación de la clase Enemigo.
+ * Controla el comportamiento, movimiento y ciclo de vida de los enemigos dentro del juego.
+ */
+
+#include "Enemigo.h"
+#include "MotorJuego.h"
+
 #include <unistd.h>
+#include <cstdlib>
 
-Enemigo::Enemigo(int x, int y, int tipo, MotorJuego* m) { // Constructor base.
-    posX = x; // Define la posición inicial en X.
-    posY = y; // Define la posición inicial en Y.
-    tipoMovimiento = tipo; // Define el patrón que seguirá su inteligencia artificial.
-    motor = m; // Guarda la referencia del motor compartido.
+/*
+ * Constructor del enemigo.
+ * Inicializa su posición, tipo de movimiento y referencia al motor del juego.
+ */
+Enemigo::Enemigo(int x, int y, int tipo, MotorJuego* m) {
+    posX = x;
+    posY = y;
+    tipoMovimiento = tipo;
+    motor = m;
+    vivo = true;
 }
 
-Enemigo::~Enemigo() { // Destructor.
-    pthread_join(hiloEnemigo, NULL); // Asegura la recolección del hilo de trabajo al cerrar.
+/*
+ * Destructor del enemigo.
+ * Espera a que el hilo asociado finalice correctamente antes de liberar recursos.
+ */
+Enemigo::~Enemigo() {
+    pthread_join(hiloEnemigo, NULL);
 }
 
-void Enemigo::iniciar() { // Inicializa el ciclo en paralelo.
-    pthread_create(&hiloEnemigo, NULL, rutinaEnemigo, (void*)this); // Arranca el hilo de patrullaje asíncrono.
+/*
+ * Inicia el hilo encargado de ejecutar la lógica del enemigo.
+ */
+void Enemigo::iniciar() {
+    pthread_create(&hiloEnemigo, NULL, rutinaEnemigo, (void*)this);
 }
 
-void* Enemigo::rutinaEnemigo(void* arg) { // Lógica asíncrona de los enemigos.
-    Enemigo* e = (Enemigo*)arg; // Convierte el puntero al contexto de la clase.
-    MotorJuego* m = e->motor; // Accede a las variables del sistema global.
+/*
+ * Indica si el enemigo sigue activo dentro de la partida.
+ */
+bool Enemigo::estaVivo() { return vivo; }
 
-    while (m->estaActivo()) { // Itera mientras persista la sesión activa.
-        pthread_mutex_lock(m->obtenerMutexEstado()); // Solicita el candado global de estados del motor.
-        while (m->estaPausado() && m->estaActivo()) { // Evalúa si se debe pausar la lógica del enemigo.
-            pthread_cond_wait(m->obtenerCondPausa(), m->obtenerMutexEstado()); // Detiene el hilo sin consumir ciclos de CPU.
+/*
+ * Función principal ejecutada por el hilo del enemigo.
+ * Gestiona el movimiento, las colisiones y la interacción con el entorno.
+ */
+void* Enemigo::rutinaEnemigo(void* arg) {
+    Enemigo* e = (Enemigo*)arg;
+    MotorJuego* m = e->motor;
+
+    // Dirección actual utilizada para los movimientos lineales.
+    int dirActual = 0;
+
+    // Mantiene al enemigo activo mientras la partida continúe.
+    while (m->estaActivo() && e->vivo) {
+
+        // Verifica si el juego se encuentra pausado.
+        pthread_mutex_lock(m->obtenerMutexEstado());
+
+        while (m->estaPausado() && m->estaActivo()) {
+            pthread_cond_wait(
+                m->obtenerCondPausa(),
+                m->obtenerMutexEstado()
+            );
         }
-        pthread_mutex_unlock(m->obtenerMutexEstado()); // Remueve el candado global de control de estados.
 
-        m->obtenerMapa()->actualizarCelda(e->posX, e->posY, 'E'); // Actualiza de forma segura la celda con el carácter del enemigo.
-        usleep(200000); // Modula el avance pausando el hilo por 200 milisegundos.
+        pthread_mutex_unlock(m->obtenerMutexEstado());
+
+        // Comprueba si el enemigo fue alcanzado por una explosión.
+        char celdaActual = m->obtenerMapa()->obtenerCelda(e->posX, e->posY);
+
+        if (celdaActual == '~') {
+            e->vivo = false;
+            m->sumarPunto(10);
+            return NULL;
+        }
+
+        int nx = e->posX;
+        int ny = e->posY;
+
+        /*
+         * Tipo 0: movimiento aleatorio.
+         * Tipo 1: movimiento horizontal.
+         * Tipo 2: movimiento vertical.
+         */
+        if (e->tipoMovimiento == 0) {
+            dirActual = rand() % 4;
+        } else if (e->tipoMovimiento == 1) {
+            if (dirActual != 2 && dirActual != 3)
+                dirActual = 2;
+        } else if (e->tipoMovimiento == 2) {
+            if (dirActual != 0 && dirActual != 1)
+                dirActual = 0;
+        }
+
+        // Calcula la siguiente posición según la dirección elegida.
+        if (dirActual == 0) nx--;
+        if (dirActual == 1) nx++;
+        if (dirActual == 2) ny--;
+        if (dirActual == 3) ny++;
+
+        // Verifica si la celda destino es transitable.
+        char celda = m->obtenerMapa()->obtenerCelda(nx, ny);
+
+        if (celda == '.' || celda == 'P' || celda == 'Q') {
+
+            // Limpia la posición anterior.
+            m->obtenerMapa()->actualizarCelda(e->posX, e->posY, '.');
+
+            // Actualiza la posición del enemigo.
+            e->posX = nx;
+            e->posY = ny;
+
+            // Dibuja al enemigo en su nueva ubicación.
+            m->obtenerMapa()->actualizarCelda(e->posX, e->posY, 'E');
+
+        } else {
+
+            // Si encuentra un obstáculo, cambia de dirección.
+            if (dirActual == 0)
+                dirActual = 1;
+            else if (dirActual == 1)
+                dirActual = 0;
+            else if (dirActual == 2)
+                dirActual = 3;
+            else if (dirActual == 3)
+                dirActual = 2;
+        }
+
+        // Controla la velocidad de movimiento del enemigo.
+        usleep(300000);
     }
-    return NULL; 
+
+    // Finaliza la ejecución del hilo.
+    return NULL;
 }

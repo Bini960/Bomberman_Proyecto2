@@ -1,22 +1,51 @@
-#ifndef BOMBA_H // Evita problemas de inclusión múltiple.
-#define BOMBA_H // Define la cabecera de la bomba.
+/*
+ * Autor: Franco Paiz
+ * Definición de la clase Bomba.
+ * Esta clase representa las bombas colocadas por los jugadores y administra
+ * su activación, explosión y efectos sobre el mapa.
+ */
 
-#include "MotorJuego.h" // Conecta con el mapa para alterar el laberinto al explotar.
-#include <pthread.h> // Necesario para instanciar un hilo exclusivo por cada explosión colocada.
+#ifndef BOMBA_H
+#define BOMBA_H
 
-class Bomba { // Representa el objeto explosivo en la simulación.
-private: 
-    pthread_t hiloBomba; // Identificador del hilo asignado para la cuenta regresiva.
-    MotorJuego* motor; // Referencia al motor del juego.
-    int posX; // Fila donde fue depositada la bomba.
-    int posY; // Columna donde fue depositada la bomba.
-    int radio; // Distancia de celdas que abarcará la onda expansiva en cruz.
-    static void* rutinaBomba(void* arg); // Rutina concurrente del temporizador.
+#include "MotorJuego.h"
+#include <pthread.h>
 
-public: 
-    Bomba(int x, int y, int r, MotorJuego* m); // Constructor parametrizado.
-    ~Bomba(); // Destructor.
-    void activar(); // Lanza el hilo de cuenta regresiva de la bomba.
+/*
+ * Clase encargada de gestionar una bomba dentro del juego.
+ * Cada bomba funciona mediante un hilo independiente que controla
+ * el tiempo de espera antes de la explosión.
+ */
+class Bomba {
+private:
+    // Hilo que ejecuta la lógica de la bomba.
+    pthread_t hiloBomba;
+
+    // Referencia al motor principal del juego.
+    MotorJuego* motor;
+
+    // Posición de la bomba en el mapa.
+    int posX;
+    int posY;
+
+    // Alcance de la explosión.
+    int radio;
+
+    // Función ejecutada por el hilo de la bomba.
+    static void* rutinaBomba(void* arg);
+
+public:
+    /*
+     * Constructor de la bomba.
+     * Recibe la posición inicial, el radio de explosión y el motor del juego.
+     */
+    Bomba(int x, int y, int r, MotorJuego* m);
+
+    // Destructor de la clase.
+    ~Bomba();
+
+    // Inicia el hilo encargado de la detonación.
+    void activar();
 };
 
-#endif 
+#endif
