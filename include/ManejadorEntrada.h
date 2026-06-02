@@ -1,19 +1,33 @@
-#ifndef MANEJADORENTRADA_H // Evita problemas de inclusión de archivos.
-#define MANEJADORENTRADA_H // Define el identificador del archivo.
+#ifndef MANEJADORENTRADA_H
+#define MANEJADORENTRADA_H
 
-#include "MotorJuego.h" // Enlaza el motor para notificar las acciones detectadas.
-#include <pthread.h> // Requerido para almacenar el identificador del hilo de lectura.
+#include "MotorJuego.h" // Dependencias del motor.
+#include <pthread.h>    // Manejo de hilos.
 
-class ManejadorEntrada { // Define la clase responsable de capturar las pulsaciones de la terminal.
+
+// Gestiona la entrada del teclado.
+class ManejadorEntrada {
 private:
-    pthread_t hiloEntrada; // Identificador oficial del hilo POSIX para el teclado.
-    MotorJuego* motor; // Puntero al motor para interactuar con la partida activa.
-    static void* rutinaEntrada(void* arg); // Función estática requerida por pthread_create como rutina.
+
+    // Hilo encargado de capturar entradas.
+    pthread_t hiloEntrada;
+
+    // Referencia al motor del juego.
+    MotorJuego* motor;
+
+    // Rutina ejecutada por el hilo.
+    static void* rutinaEntrada(void* arg);
 
 public:
-    ManejadorEntrada(MotorJuego* m); // Constructor que recibe la referencia del motor.
-    ~ManejadorEntrada(); // Destructor para asegurar la liberación de recursos.
-    void iniciar(); // Llama a la creación del hilo de entrada.
+
+    // Constructor.
+    ManejadorEntrada(MotorJuego* m);
+
+    // Destructor.
+    ~ManejadorEntrada();
+
+    // Inicia el hilo de captura.
+    void iniciar();
 };
 
-#endif // Fin del archivo de cabecera.
+#endif
