@@ -1,25 +1,55 @@
-#ifndef JUGADOR_H 
-#define JUGADOR_H // Define el header.
+#ifndef JUGADOR_H
+#define JUGADOR_H
 
-#include "MotorJuego.h" // Permite acceder al mapa y sincronización compartida.
-#include <pthread.h> // Necesario para instanciar el hilo individual de control.
+#include "MotorJuego.h" // Dependencias del motor.
+#include <pthread.h>    // Manejo de hilos.
+#include <time.h>       // Control de tiempo.
 
-class Jugador { // Representa la entidad del usuario dentro de la simulación.
-private: 
-    pthread_t hiloJugador; // Almacena el identificador del hilo del personaje.
-    MotorJuego* motor; // Acceso al motor central.
-    int posX; // Coordenada actual en el eje X de la matriz.
-    int posY; // Coordenada actual en el eje Y de la matriz.
-    int vidas; // Almacena el contador de salud del jugador.
-    int id; // Identificador numérico para distinguir al jugador 1 del jugador 2.
-    static void* rutinaJugador(void* arg); // Rutina concurrente para procesar la entidad.
 
-public: 
-    Jugador(int idJugador, int x, int y, MotorJuego* m); // Constructor parametrizado.
-    ~Jugador(); // Destructor.
-    void iniciar(); // Lanza el hilo independiente de este personaje.
-    int obtenerX(); // Retorna la posición X.
-    int obtenerY(); // Retorna la posición Y.
+// Representa a un jugador dentro de la partida.
+class Jugador {
+private:
+
+    // Hilo principal del jugador.
+    pthread_t hiloJugador;
+
+    // Referencia al motor del juego.
+    MotorJuego* motor;
+
+    // Posición actual del jugador.
+    int posX;
+    int posY;
+
+    // Estado del jugador.
+    int vidas;
+    int id;
+
+    // Atributos de las bombas.
+    int radioBomba;
+
+    // Habilidades especiales.
+    bool atraviesaMuros;
+    time_t tiempoAtraviesaMuros;
+
+    // Contenido original de la celda ocupada.
+    char celdaAnterior;
+
+    // Rutina ejecutada por el hilo.
+    static void* rutinaJugador(void* arg);
+
+public:
+
+    // Constructor.
+    Jugador(int idJugador, int x, int y, MotorJuego* m);
+
+    // Destructor.
+    ~Jugador();
+
+    // Inicia el hilo del jugador.
+    void iniciar();
+
+    // Retorna las vidas restantes.
+    int obtenerVidas();
 };
 
 #endif
