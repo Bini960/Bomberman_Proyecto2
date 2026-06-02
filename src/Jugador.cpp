@@ -1,38 +1,69 @@
 #include "Jugador.h" // Enlaza el archivo del jugador.
-#include <unistd.h> // Permite el uso de pausas de tiempo 
+#include <unistd.h>  // Permite el uso de pausas de tiempo.
 
-Jugador::Jugador(int idJugador, int x, int y, MotorJuego* m) { // Inicializa los atributos del jugador.
-    id = idJugador; // Asigna el identificador único del usuario.
-    posX = x; // Establece la fila inicial en la cuadrícula.
-    posY = y; // Establece la columna inicial en la cuadrícula.
-    vidas = 3; // Otorga el contador de tres vidas iniciales.
-    motor = m; // Vincula el motor de la sesión.
+
+// Inicializa los atributos del jugador.
+Jugador::Jugador(int idJugador, int x, int y, MotorJuego* m) {
+    id = idJugador;
+    posX = x;
+    posY = y;
+    vidas = 3;
+    motor = m;
 }
 
-Jugador::~Jugador() { // Implementación del destructor.
-    pthread_join(hiloJugador, NULL); // Espera al hilo del jugador para evitar procesos zombies.
+
+// Espera la finalización del hilo.
+Jugador::~Jugador() {
+    pthread_join(hiloJugador, NULL);
 }
 
-void Jugador::iniciar() { // Genera el proceso concurrente.
-    pthread_create(&hiloJugador, NULL, rutinaJugador, (void*)this); // Inicializa el hilo pasando el objeto actual como argumento.
+
+// Crea el hilo del jugador.
+void Jugador::iniciar() {
+    pthread_create(&hiloJugador, NULL, rutinaJugador, (void*)this);
 }
 
-void* Jugador::rutinaJugador(void* arg) { // Lógica concurrente de la entidad.
-    Jugador* j = (Jugador*)arg; // Convierte el parámetro al tipo de la clase actual.
-    MotorJuego* m = j->motor; // Obtiene el acceso al motor de juego compartido.
 
-    while (m->estaActivo()) { // Se ejecuta mientras la partida continúe activa.
-        pthread_mutex_lock(m->obtenerMutexEstado()); // Solicita el candado global de estados del motor.
-        while (m->estaPausado() && m->estaActivo()) { // Evalúa si se debe pausar la lógica del jugador.
-            pthread_cond_wait(m->obtenerCondPausa(), m->obtenerMutexEstado()); // Espera a que termine la pausa.
+// Ejecuta la lógica concurrente del jugador.
+void* Jugador::rutinaJugador(void* arg) {
+    Jugador* j = (Jugador*)arg;
+    MotorJuego* m = j->motor;
+
+    // Mantiene activo al jugador mientras dure la partida.
+    while (m->estaActivo()) {
+
+        // Verifica si el juego está en pausa.
+        pthread_mutex_lock(m->obtenerMutexEstado());
+        while (m->estaPausado() && m->estaActivo()) {
+            pthread_cond_wait(
+                m->obtenerCondPausa(),
+                m->obtenerMutexEstado()
+            );
         }
-        pthread_mutex_unlock(m->obtenerMutexEstado()); // Libera el candado global tras validar la pausa.
+        pthread_mutex_unlock(m->obtenerMutexEstado());
 
-        m->obtenerMapa()->actualizarCelda(j->posX, j->posY, (j->id == 1) ? 'P' : 'Q'); // Dibuja el identificador visual en el mapa seguro.
-        usleep(50000); // Detiene el hilo por 50 milisegundos para regular los ciclos de actualización.
+        // Actualiza la posición del jugador en el mapa.
+        m->obtenerMapa()->actualizarCelda(
+            j->posX,
+            j->posY,
+            (j->id == 1) ? 'P' : 'Q'
+        );
+
+        // Controla la velocidad de actualización.
+        usleep(50000);
     }
-    return NULL; // Concluye la función de forma correcta.
+
+    return NULL;
 }
 
-int Jugador::obtenerX() { return posX; } // Retorna la fila actual.
-int Jugador::obtenerY() { return posY; } // Retorna la columna actual.
+
+// Retorna la fila actual.
+int Jugador::obtenerX() {
+    return posX;
+}
+
+
+// Retorna la columna actual.
+int Jugador::obtenerY() {
+    return posY;
+}
