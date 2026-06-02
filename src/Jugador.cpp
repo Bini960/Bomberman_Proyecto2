@@ -40,9 +40,32 @@ void* Jugador::rutinaJugador(void* arg) { // Conduce comportamiento de vida de l
         }
         pthread_mutex_unlock(m->obtenerMutexEstado()); // Libera puerta lógicamente y continúa lectura.
 
-        if (j->atraviesaMuros && difftime(time(NULL), j->tiempoAtraviesaMuros) >= 2.0) { // Evalúa de forma estricta si el diferencial de tiempo base supera 2.0 segundos usando el reloj interno OS.
-            j->atraviesaMuros = false; // Degrada la variable revocando poder fantasma al expirar plazo límite estricto inmanejable previniendo explotación de mecánica evasiva y obligando al riesgo táctico.
-            m->establecerMensaje("El efecto de atravesar muros ha caducado."); // Modifica variable global emitiendo advertencia clara en pantalla al usuario de forma indirecta atómica.
+        if (j->atraviesaMuros && difftime(time(NULL), j->tiempoAtraviesaMuros) >= 2.0) { 
+            j->atraviesaMuros = false; // Revoca el permiso algorítmico para evadir colisiones en memoria.
+            
+            if (j->celdaAnterior == '#' || j->celdaAnterior == 'X') { // Evalúa si la entidad quedó atrapada dentro de una estructura inamovible en la matriz.
+                m->obtenerMapa()->actualizarCelda(j->posX, j->posY, j->celdaAnterior); // Sanea la coordenada actual restituyendo la geometría original.
+                bool reubicado = false; // Bandera atómica local para frenar la búsqueda.
+                
+                // Ejecuta un barrido radial para encontrar la celda de memoria libre más cercana.
+                for (int radioBusqueda = 1; radioBusqueda < 15 && !reubicado; radioBusqueda++) { 
+                    for (int i = 1; i < 12 && !reubicado; i++) { // Navega el límite vertical de la memoria del tablero.
+                        for (int k = 1; k < 14 && !reubicado; k++) { // Navega el límite horizontal de hardware.
+                            if (abs(j->posX - i) + abs(j->posY - k) <= radioBusqueda) { // Calcula proximidad para minimizar desplazamientos drásticos.
+                                if (m->obtenerMapa()->obtenerCelda(i, k) == '.') { // Verifica disponibilidad de celda segura sin colisión.
+                                    j->posX = i; // Sobrescribe posición X con el área segura encontrada.
+                                    j->posY = k; // Sobrescribe posición Y atómicamente.
+                                    j->celdaAnterior = '.'; // Restablece el suelo inmaculado por defecto.
+                                    reubicado = true; // Cierra el algoritmo de búsqueda para liberar ciclos del CPU.
+                                } 
+                            } 
+                        } 
+                    } 
+                } 
+                m->establecerMensaje("Efecto caducado. Expulsado del muro a zona segura."); // Emite notificación de reubicación espacial a la interfaz.
+            } else {
+                m->establecerMensaje("El efecto de atravesar muros ha caducado."); // Actualiza GUI sin desplazar matriz.
+            }
         }
 
         char celdaActual = m->obtenerMapa()->obtenerCelda(j->posX, j->posY); // Chequea suelo actual detectando trampas o amenazas simultáneas escritas por entes paralelos sin percance visual asíncrono.
