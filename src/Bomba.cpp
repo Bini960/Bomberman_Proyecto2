@@ -8,6 +8,7 @@
 
 #include <unistd.h>
 #include <cstdlib>
+#include <vector> // Se incluye vector para manejar la memoria dinámica de forma segura.
 
 /*
  * Constructor de la bomba.
@@ -61,15 +62,16 @@ void* Bomba::rutinaBomba(void* arg) {
     int dx[] = {-1, 1, 0, 0};
     int dy[] = {0, 0, -1, 1};
 
-    // Almacenan todas las celdas afectadas para limpiarlas después.
-    int afectadasX[20];
-    int afectadasY[20];
-    int numAfectadas = 0;
+    // CORRECCIÓN: Se reemplazan los arreglos estáticos de tamaño 20 por vectores dinámicos.
+    // Esto previene el desbordamiento de memoria (Segmentation Fault) cuando el radio es muy grande.
+    std::vector<int> afectadasX;
+    std::vector<int> afectadasY;
+    std::vector<bool> eraMuro; // Nuevo vector para rastrear si la celda era un muro destructible.
 
     // Registra el punto central de la explosión.
-    afectadasX[numAfectadas] = b->posX;
-    afectadasY[numAfectadas] = b->posY;
-    numAfectadas++;
+    afectadasX.push_back(b->posX);
+    afectadasY.push_back(b->posY);
+    eraMuro.push_back(false); // El centro nunca es un muro porque ahí se colocó la bomba.
 
     // Marca visualmente el centro de la explosión.
     m->obtenerMapa()->actualizarCelda(b->posX, b->posY, '~');
@@ -87,18 +89,19 @@ void* Bomba::rutinaBomba(void* arg) {
             // Los muros indestructibles bloquean la expansión.
             if (celda == '#') break;
 
-            afectadasX[numAfectadas] = nx;
-            afectadasY[numAfectadas] = ny;
-            numAfectadas++;
+            afectadasX.push_back(nx);
+            afectadasY.push_back(ny);
 
-            // Si encuentra un muro destruible, lo elimina y detiene la propagación.
+            // Si encuentra un muro destruible, lo elimina, lo registra y detiene la propagación.
             if (celda == 'X') {
+                eraMuro.push_back(true); // Registra que aquí había un muro destructible.
                 m->obtenerMapa()->actualizarCelda(nx, ny, '~');
                 m->sumarPunto(5);
                 break;
             }
 
-            // Marca la celda como parte de la explosión.
+            // Si era un pasillo normal, simplemente lo marca como parte de la explosión.
+            eraMuro.push_back(false);
             m->obtenerMapa()->actualizarCelda(nx, ny, '~');
         }
     }
@@ -107,12 +110,14 @@ void* Bomba::rutinaBomba(void* arg) {
     usleep(500000);
 
     // Limpia todas las celdas afectadas.
-    for (int i = 0; i < numAfectadas; i++) {
+    for (size_t i = 0; i < afectadasX.size(); i++) {
         char reemplazo = '.';
 
-        // Existe una probabilidad de generar un power-up.
-        if (rand() % 100 < 20 && i > 0)
+        // CORRECCIÓN: Ahora solo existe la probabilidad de generar un power-up 
+        // estrictamente si la celda contenía un muro destructible ('X').
+        if (eraMuro[i] && (rand() % 100 < 45)) {
             reemplazo = '+';
+        }
 
         m->obtenerMapa()->actualizarCelda(
             afectadasX[i],
