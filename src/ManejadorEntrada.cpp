@@ -32,9 +32,10 @@ void* ManejadorEntrada::rutinaEntrada(void* arg) { // Función principal asíncr
             } else if (tecla == 'p' || tecla == 'P') { // Procesa atajo de interrupción lógica suspendida.
                 motorJuego->alternarPausa(); // Convoca estado de sueño general simultáneo en las funciones esclavas.
             } else if (tecla == 27) { // Detecta primer valor decodificado ASCII correspondiente al código de escape primitivo de teclas complejas de dirección.
+                usleep(2000); // CORRECCIÓN PARA WSL: Otorga 2 milisegundos para garantizar que la secuencia completa llegue al búfer de lectura no bloqueante.
                 char seq[2]; // Prepara matriz de apoyo consecutiva al escape para discernir tipo de comando expandido ANSI.
                 if (read(STDIN_FILENO, &seq[0], 1) > 0 && read(STDIN_FILENO, &seq[1], 1) > 0) { // Absorbe dos bytes continuos comprobando finalización de bloque ANSI detectado.
-                    if (seq[0] == '[') { // Discrimina segundo byte secuencial comprobando corchete característico de secuencias direccionales estándar.
+                    if (seq[0] == '[' || seq[0] == 'O') { // CORRECCIÓN PARA WSL: Discrimina segundo byte secuencial aceptando el uso nativo de 'O' que caracteriza a Windows Subsystem for Linux.
                         pthread_mutex_lock(&mutexTecla); // Bloquea espacio estático protegiendo información volátil contra consumo simultáneo ajeno y corrupciones en memoria inter-hilo.
                         if (seq[1] == 'A') teclaP2 = 'U'; // Traduce señal superior traduciéndolo a carácter de desplazamiento.
                         if (seq[1] == 'B') teclaP2 = 'D'; // Determina caída del vector.

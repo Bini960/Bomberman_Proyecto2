@@ -86,7 +86,14 @@ void MotorJuego::inicializarNivel() { // Reconstruye el entorno para jugar.
     int cantidadEnemigos = 2 + nivel; // Calcula un incremento progresivo de adversarios basado en el nivel actual.
     for (int i = 0; i < cantidadEnemigos; i++) { // Ejecuta la creación repetitiva de oponentes.
         int tipoIA = i % 3; // Asigna patrones de comportamiento matemáticamente balanceados.
-        enemigos.push_back(new Enemigo(11 - i, 13 - i, tipoIA, this)); // Instancia la IA en posiciones distanciadas del jugador primario.
+        
+        // CORRECCIÓN DE SPAWN: Posiciona a la inteligencia artificial de forma segura hacia el centro de la matriz.
+        // Se utilizan números impares para evitar sobreescribir la arquitectura fija del tablero.
+        // Se alejan del área de P1 (1,1) y del área de P2 (11,13) previniendo una muerte instantánea al arrancar la partida.
+        int eX = 5 + (i % 3) * 2; 
+        int eY = 5 + (i % 4) * 2; 
+
+        enemigos.push_back(new Enemigo(eX, eY, tipoIA, this)); // Instancia la IA en las posiciones centralizadas y seguras calculadas.
         enemigos[i]->iniciar(); // Enciende los algoritmos de patrullaje.
     }
 }
