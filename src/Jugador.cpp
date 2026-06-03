@@ -99,14 +99,17 @@ void* Jugador::rutinaJugador(void* arg) { // Conduce comportamiento de vida de l
         int nx = j->posX; // Proyecta sombra teórica de matriz X para deducciones previas a escritura.
         int ny = j->posY; // Proyecta matriz Y anticipando vectores direccionales lógicos matemáticos crudos y evalúa solidez de casillas colindantes posicionales puras inmutables.
         
-        if ((j->id == 1 && accion == 'w') || (j->id == 2 && accion == 'U')) nx--; // Resta coordenada simulando paso ascendente hacia norte direccional general del plano.
-        if ((j->id == 1 && accion == 's') || (j->id == 2 && accion == 'D')) nx++; // Suma empujando descenso hacia sur cartesiano relativo de matriz invertida general terminal OS.
-        if ((j->id == 1 && accion == 'a') || (j->id == 2 && accion == 'L')) ny--; // Decrementa eje Y girando al oeste izquierdo matriz interna base del vector espacial 2D.
-        if ((j->id == 1 && accion == 'd') || (j->id == 2 && accion == 'R')) ny++; // Incrementa apuntando al este derecho matriz completando brújula base posicional direccional controlable manual interactiva generalizada adaptada del modelo físico abstracto del arreglo matricial gráfico base funcional lógicamente y coherente visual e iterativa en bucle central POSIX base.
+        // CORRECCIÓN: Se agrega compatibilidad con mayúsculas para las teclas del jugador 1.
+        // Esto resuelve el problema cuando el usuario tiene activado el Bloqueo de Mayúsculas (Caps Lock)
+        // o mantiene presionada la tecla Shift accidentalmente mientras juega.
+        if ((j->id == 1 && (accion == 'w' || accion == 'W')) || (j->id == 2 && accion == 'U')) nx--; 
+        if ((j->id == 1 && (accion == 's' || accion == 'S')) || (j->id == 2 && accion == 'D')) nx++; 
+        if ((j->id == 1 && (accion == 'a' || accion == 'A')) || (j->id == 2 && accion == 'L')) ny--; 
+        if ((j->id == 1 && (accion == 'd' || accion == 'D')) || (j->id == 2 && accion == 'R')) ny++; 
 
-        if ((j->id == 1 && accion == 'f') || (j->id == 2 && accion == 'E')) { // Dispara condicional de agresión física colocando explosivos independientemente del mapeo direccional al detectar código de detonación.
-            Bomba* b = new Bomba(j->posX, j->posY, j->radioBomba, m); // Reserva heap delegando detonador con radio dinámico actualizado por power ups de matriz paralela al motor en función de memoria asíncrona con independencia algorítmica.
-            b->activar(); // Invoca método que desliga el hilo paralelo destructivo atado al tiempo OS liberando responsabilidad del jugador que puede alejarse.
+        if ((j->id == 1 && (accion == 'f' || accion == 'F')) || (j->id == 2 && accion == 'E')) { 
+            Bomba* b = new Bomba(j->posX, j->posY, j->radioBomba, m); 
+            b->activar(); 
         } else if (nx != j->posX || ny != j->posY) { // Asegura de que exista diferencial y no consumo vacío de CPU.
             char celda = m->obtenerMapa()->obtenerCelda(nx, ny); // Muestrea solidez y objeto frontal futuro consultando atómicamente.
             
